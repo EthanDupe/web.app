@@ -1,74 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ultimate Productivity & Fun App</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b, #1e3c72, #2a5298);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            position: relative;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .microphone-button {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .microphone-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .microphone-button:active {
+            transform: scale(0.9);
+        }
+
+        .microphone-button::before {
+            content: "";
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .microphone-button i {
+            font-size: 40px;
+        }
+
+        #output {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        /* Floating animated elements */
+        .floating {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: float 6s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 0.5; }
+            100% { transform: translateY(-50px); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-  <!-- Header Section -->
-  <header>
-    <h1>Ultimate Productivity & Fun App</h1>
-    <button id="dark-mode-toggle">🌙</button> <!-- Dark mode toggle -->
-  </header>
 
-  <!-- Navigation Bar -->
-  <nav>
-    <ul>
-      <li><a href="#productivity">Productivity</a></li>
-      <li><a href="#music-player">Music Player</a></li>
-      <li><a href="#image-editor">Image Editor</a></li>
-      <li><a href="#chatbot">AI Chatbot</a></li>
-      <li><a href="#budget-tracker">Budget Tracker</a></li>
-      <li><a href="#meme-generator">Meme Generator</a></li>
-      <li><a href="#search-engine">Search Engine</a></li>
-    </ul>
-  </nav>
+    <h1>Speak Now</h1>
+    <div class="microphone-button" id="micBtn">
+        🎤
+    </div>
+    <p id="output">Click the mic and start speaking...</p>
 
-  <!-- Main Content Area -->
-  <main>
-    <section id="productivity">
-      <h2>Productivity Dashboard</h2>
-      <!-- Add to-do list, Pomodoro timer, etc. here -->
-    </section>
+    <script>
+        const micBtn = document.getElementById("micBtn");
+        const output = document.getElementById("output");
 
-    <section id="music-player">
-      <h2>Music Player</h2>
-      <!-- Add music player features here -->
-    </section>
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
 
-    <section id="image-editor">
-      <h2>AI Image Editor</h2>
-      <!-- Add image editor features here -->
-    </section>
+            micBtn.addEventListener("click", () => {
+                recognition.start();
+                output.textContent = "Listening...";
+                micBtn.style.transform = "scale(1.1)";
+                micBtn.style.background = "rgba(255, 255, 255, 0.4)";
+            });
 
-    <section id="chatbot">
-      <h2>AI Chatbot</h2>
-      <!-- Add chatbot here -->
-    </section>
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                output.textContent = `You said: "${transcript}"`;
+            };
 
-    <section id="budget-tracker">
-      <h2>Budget Tracker</h2>
-      <!-- Add expense tracker features here -->
-    </section>
+            recognition.onspeechend = () => {
+                recognition.stop();
+                micBtn.style.transform = "scale(1)";
+                micBtn.style.background = "rgba(255, 255, 255, 0.2)";
+            };
 
-    <section id="meme-generator">
-      <h2>Meme Generator</h2>
-      <!-- Add meme generator features here -->
-    </section>
+            recognition.onerror = (event) => {
+                output.textContent = "Error occurred. Try again.";
+            };
+        } else {
+            output.textContent = "Speech recognition not supported.";
+        }
 
-    <section id="search-engine">
-      <h2>AI Search Engine</h2>
-      <!-- Add search engine features here -->
-    </section>
-  </main>
+        // Generate floating animated elements
+        for (let i = 0; i < 10; i++) {
+            let bubble = document.createElement("div");
+            bubble.classList.add("floating");
+            bubble.style.left = `${Math.random() * 100}vw`;
+            bubble.style.top = `${Math.random() * 100}vh`;
+            bubble.style.animationDuration = `${Math.random() * 5 + 3}s`;
+            document.body.appendChild(bubble);
+        }
+    </script>
 
-  <!-- Footer -->
-  <footer>
-    <p>Made by @ethandupe! </p>
-  </footer>
-
-  <script src="scripts.js"></script>
 </body>
 </html>
