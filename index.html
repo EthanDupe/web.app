@@ -3,113 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech Recognition</title>
+    <title>Voice Assistant</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            text-align: center;
-            color: white;
-            overflow: hidden;
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            flex-direction: column; text-align: center; color: white; overflow: hidden;
             background: linear-gradient(45deg, #ff416c, #ff4b2b, #1e3c72, #2a5298);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
-            position: relative;
+            background-size: 400% 400%; animation: gradientBG 10s ease infinite; position: relative;
         }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        h1 { font-size: 2rem; margin-bottom: 20px; }
         .microphone-button {
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 3px solid white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: 0.3s;
-            position: relative;
+            width: 100px; height: 100px; background: rgba(255, 255, 255, 0.2);
+            border: 3px solid white; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+            transition: 0.3s; position: relative;
         }
-
-        .microphone-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .microphone-button:active {
-            transform: scale(0.9);
-        }
-
+        .microphone-button:hover { background: rgba(255, 255, 255, 0.3); }
+        .microphone-button:active { transform: scale(0.9); }
         .microphone-button::before {
-            content: "";
-            position: absolute;
-            width: 120%;
-            height: 120%;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            content: ""; position: absolute; width: 120%; height: 120%;
+            border-radius: 50%; background: rgba(255, 255, 255, 0.1);
             animation: pulse 1.5s infinite;
         }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.2); opacity: 0.4; }
-            100% { transform: scale(1); opacity: 0.8; }
-        }
-
-        .microphone-button i {
-            font-size: 40px;
-        }
-
-        #output {
-            font-size: 1.5rem;
-            margin-top: 20px;
-        }
-
-        /* Floating animated elements */
-        .floating {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            animation: float 6s infinite alternate;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0); opacity: 0.5; }
-            100% { transform: translateY(-50px); opacity: 1; }
-        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 0.4; } 100% { transform: scale(1); opacity: 0.8; } }
+        .microphone-button i { font-size: 40px; }
+        #output { font-size: 1.5rem; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <h1>Speak Now</h1>
-    <div class="microphone-button" id="micBtn">
-        🎤
-    </div>
+    <div class="microphone-button" id="micBtn">🎤</div>
     <p id="output">Click the mic and start speaking...</p>
 
     <script>
+        let responses = {}; // Store JSON data
+
+        // Load responses from JSON file
+        fetch("responses.json")
+            .then(response => response.json())
+            .then(data => { responses = data; });
+
         const micBtn = document.getElementById("micBtn");
         const output = document.getElementById("output");
 
@@ -128,8 +64,11 @@
             });
 
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
+                const transcript = event.results[0][0].transcript.toLowerCase();
                 output.textContent = `You said: "${transcript}"`;
+
+                let response = responses[transcript] || "Sorry, I didn't understand that.";
+                speak(response);
             };
 
             recognition.onspeechend = () => {
@@ -145,14 +84,13 @@
             output.textContent = "Speech recognition not supported.";
         }
 
-        // Generate floating animated elements
-        for (let i = 0; i < 10; i++) {
-            let bubble = document.createElement("div");
-            bubble.classList.add("floating");
-            bubble.style.left = `${Math.random() * 100}vw`;
-            bubble.style.top = `${Math.random() * 100}vh`;
-            bubble.style.animationDuration = `${Math.random() * 5 + 3}s`;
-            document.body.appendChild(bubble);
+        function speak(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+            speech.rate = 1;
+            speech.pitch = 1;
+            speechSynthesis.speak(speech);
+            output.textContent = text;
         }
     </script>
 
